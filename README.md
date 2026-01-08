@@ -7,16 +7,23 @@ The primary objective was to move beyond signature-based detection and utilize s
 
 **Interactive Dashboard:** [View Live Anomaly Analysis](https://aws-service-anomaly.manus.space)
 
+## Data Source
+The machine learning model was trained on the **AWS CloudTrail Dataset from flaws.cloud**.
+* **Dataset Access:** [Download via Kaggle](https://www.kaggle.com/datasets/nobukim/aws-cloudtrails-dataset-from-flaws-cloud?resource=download)
+* **Origin:** Originally released by **Summit Route** for the `flaws.cloud` security challenge.
+* **Volume:** ~1.9 million events (830 MB).
+* **Significance:** This dataset represents real-world, "messy" cloud logs, offering a realistic baseline for training anomaly detection models compared to synthetic or sanitized data.
+
 ## Technical Architecture & Stack
 * **Data Processing:** Apache PySpark (Scalable log ingestion and transformation)
 * **Machine Learning:** Spark MLlib (KMeans Clustering, Vector Assembly)
 * **Visualization:** Plotly (Interactive dashboards for Security Operations)
-* **Data Source:** AWS CloudTrail Logs (~2 million events)
+* **Data Source:** AWS CloudTrail Logs (Ingested from CSV)
 
 ## Methodology: The Machine Learning Pipeline
 
 ### 1. Training Data & Feature Engineering
-The model was trained on a dataset of **1,939,214 CloudTrail events**, treating the entire historical log as the baseline for "normal" activity.
+The model was trained on **1,939,214 CloudTrail events**, treating the entire historical log as the baseline for "normal" activity.
 * **Feature Selection:** Selected high-dimensional features defining the context of an API call: `eventSource` (Service), `awsRegion` (Location), `userIdentitytype` (Actor), and `errorCode` (Outcome).
 * **Transformation:** Built a PySpark pipeline to convert categorical strings into mathematical vectors using **String Indexing** and **One-Hot Encoding**, enabling numerical analysis of log data.
 
