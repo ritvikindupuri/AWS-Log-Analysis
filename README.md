@@ -5,23 +5,27 @@ This project implements an automated threat detection pipeline designed to ident
 
 The primary objective was to move beyond signature-based detection and utilize statistical deviation to identify "unknown unknowns" in cloud infrastructure usage.
 
+### 🔴 [Launch Interactive Dashboard](https://aws-service-anomaly.manus.space)
+*Explore the live anomalies, geographical maps, and service heatmaps hosted on the web.*
+
 ## Technical Architecture & Stack
 * **Data Processing:** Apache PySpark (Scalable log ingestion and transformation)
 * **Machine Learning:** Spark MLlib (KMeans Clustering, Vector Assembly)
-* **Visualization:** Plotly (Interactive dashboards for Security Operations)
+* **Visualization:** Plotly ([Live Interactive Dashboard](https://aws-service-anomaly.manus.space) for Security Operations)
 * **Data Source:** AWS CloudTrail Logs (~2 million events)
 
-## Methodology: From Raw Logs to Risk Signals
+## Methodology: The Machine Learning Pipeline
 
-### 1. Feature Engineering
-Raw CloudTrail logs are noisy. To prepare the data for the model, I focused on high-value features that define the "who, what, and where" of an API call:
-* **Categorical Encoding:** Features such as `eventSource`, `awsRegion`, and `errorCode` were transformed using **String Indexing** and **One-Hot Encoding** to create numerical feature vectors.
-* **Vector Assembly:** These processed features were consolidated into a single vector space, preparing them for high-dimensional distance calculation.
+### 1. Training Data & Feature Engineering
+The model was trained on a dataset of **1,939,214 CloudTrail events**, treating the entire historical log as the baseline for "normal" activity.
+* **Feature Selection:** I selected high-dimensional features that define the context of an API call: `eventSource` (Service), `awsRegion` (Location), `userIdentitytype` (Actor), and `errorCode` (Outcome).
+* **Transformation:** Because machine learning algorithms require numerical input, I built a PySpark pipeline to convert these categorical strings into mathematical vectors using **String Indexing** and **One-Hot Encoding**.
 
-### 2. Unsupervised Anomaly Detection (KMeans)
-I utilized **KMeans Clustering (k=10)** to establish a baseline of "normal" behavior. The model groups similar API activities into dense clusters.
-* **Anomaly Scoring:** The score is defined as the **Euclidean distance** between a specific event and its cluster centroid.
-* **Thresholding:** A threshold of **1.8** was established based on the score distribution. Any event with a distance score exceeding this limit represents a significant deviation from standard operational patterns.
+### 2. Algorithm: Unsupervised Anomaly Detection
+I utilized **KMeans Clustering (k=10)**, an unsupervised algorithm that groups data points into clusters based on similarity.
+* **How it Works:** The model identifies 10 distinct "patterns" of normal usage (clusters) within the 1.9 million events. It does not require labeled "attack" data; instead, it learns what "normal" looks like mathematically.
+* **Anomaly Scoring:** For every new event, the model calculates the **Euclidean distance** between that event and the center (centroid) of its nearest cluster.
+* **Thresholding:** A threshold of **1.8** was established. Events with a distance score > 1.8 are mathematically distant from any known normal pattern, marking them as anomalies.
 
 ## Visual Analysis & Security Insights
 
